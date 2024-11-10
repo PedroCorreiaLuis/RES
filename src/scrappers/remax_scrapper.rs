@@ -40,6 +40,8 @@ async fn get_listing(
         .get(format!("https://www.remax.pt/{}", url_id))
         .await;
 
+    tokio::time::sleep(Duration::from_millis(200)).await;
+
     let description = web_driver.find(By::Id("description")).await?.text().await?;
     let details_div = web_driver.find(By::Id("details")).await?;
     let details_vec = details_div.find_all(By::ClassName("flex")).await?;
@@ -122,7 +124,7 @@ pub async fn remax_scrape_mechanism() -> Result<(), WebDriverError> {
 pub async fn run() {
     match remax_scrape_mechanism().await {
         Ok(_) => {
-            println!("Scrapper mechanism finished")
+            println!("Remax scrapper mechanism finished")
         }
         Err(e) => {
             eprintln!("Error: {:?}", e);

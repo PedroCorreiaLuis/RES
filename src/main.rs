@@ -1,5 +1,5 @@
 use crate::schemas::llm::ToLLMRequestBody;
-use crate::scrappers::remax_scrapper;
+use crate::scrappers::{era_scrapper, remax_scrapper};
 use dotenv::dotenv;
 use std::env;
 
@@ -8,11 +8,13 @@ mod llms {
 }
 
 mod schemas {
+    pub mod era_listing_raw;
     pub mod llm;
     pub mod remax_listing_raw;
 }
 mod scrappers {
     pub mod driver;
+    pub mod era_scrapper;
     pub mod file_utils;
     pub mod remax_scrapper;
 }
@@ -28,6 +30,11 @@ async fn main() {
         "remax" => {
             remax_scrapper::run().await;
         }
-        _ => {}
+        "era" => {
+            era_scrapper::run().await;
+        }
+        _ => {
+            println!("Invalid mode provided. Use `remax` or `era`");
+        }
     }
 }
