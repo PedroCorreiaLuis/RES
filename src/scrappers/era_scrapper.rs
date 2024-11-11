@@ -57,7 +57,7 @@ async fn get_listing(
     let price: String = web_driver
         .find(By::ClassName("price-value"))
         .await?
-        .text()
+        .inner_html()
         .await?;
 
     let mut details_split_by_string: Vec<String> = Vec::new();
