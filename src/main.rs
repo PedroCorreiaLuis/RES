@@ -1,5 +1,4 @@
-use crate::schemas::llm::ToLLMRequestBody;
-use crate::scrappers::{era_scrapper, remax_scrapper};
+use crate::scrappers::{era_scrapper, remax_scrapper, supercasas_scrapper};
 use dotenv::dotenv;
 use std::env;
 
@@ -11,12 +10,15 @@ mod schemas {
     pub mod era_listing_raw;
     pub mod llm;
     pub mod remax_listing_raw;
+    pub mod supercasas_listing_raw;
 }
 mod scrappers {
     pub mod driver;
     pub mod era_scrapper;
     pub mod file_utils;
     pub mod remax_scrapper;
+    pub mod scrapper_utils;
+    pub mod supercasas_scrapper;
 }
 
 #[tokio::main]
@@ -33,8 +35,11 @@ async fn main() {
         "era" => {
             era_scrapper::run().await;
         }
+        "supercasas" => {
+            supercasas_scrapper::run().await;
+        }
         _ => {
-            println!("Invalid mode provided. Use `remax` or `era`");
+            println!("Invalid mode provided. Use `remax`, `era` or `supercasas`");
         }
     }
 }

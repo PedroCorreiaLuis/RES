@@ -4,10 +4,11 @@ use crate::schemas::llm::{
 };
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use reqwest::{Client, Response};
+use serde::Serialize;
 use serde_json::json;
 use std::string::ToString;
 
-pub async fn call_real_estate_llm<T: ToLLMRequestBody>(
+pub async fn call_real_estate_llm<T: ToLLMRequestBody + Serialize>(
     request: T,
     key: &str,
 ) -> reqwest::Result<LLMResponse> {

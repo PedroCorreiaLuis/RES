@@ -8,8 +8,8 @@ pub async fn get_file_read(path: &str) -> Result<File, std::io::Error> {
 
 pub async fn get_file_write(path: &str) -> Result<File, std::io::Error> {
     let file_write: File = OpenOptions::new()
-        .write(true)
         .create(true)
+        .write(true)
         .append(true)
         .open(path)
         .await?;
