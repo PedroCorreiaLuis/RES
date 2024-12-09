@@ -116,8 +116,20 @@ pub async fn supercasas_scrape_mechanism() -> Result<(), WebDriverError> {
             });
 
             let current_page: String = web_driver.current_url().await?.to_string();
+            let elements_found: bool = match web_driver
+                .find(By::ClassName("home-search-content"))
+                .await
+            {
+                Ok(element) => match element.text().await {
+                    Ok(text) => !text.contains("Não encontrámos imóveis para o que procuras..."),
+                    Err(_) => true,
+                },
+                Err(_) => true,
+            };
 
-            if (current_page.contains(district) && current_page.contains(page.to_string().as_str()))
+            if current_page.contains(district)
+                && current_page.contains(page.to_string().as_str())
+                && elements_found
             {
                 match url_ids_vec {
                     Ok(url_ids) => {
