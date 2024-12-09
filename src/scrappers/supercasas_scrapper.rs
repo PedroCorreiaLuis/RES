@@ -21,6 +21,7 @@ async fn get_url_ids(
             district, page
         ))
         .await;
+
     tokio::time::sleep(Duration::from_millis(2500)).await;
 
     let mut ids: Vec<String> = Vec::new();
@@ -49,7 +50,7 @@ async fn get_listing(
     url_id: String,
 ) -> Result<SuperCasasListingRaw, WebDriverError> {
     let _ = web_driver
-        .get(format!("https://supercasa.pt/{}", url_id))
+        .get(format!("https://supercasa.pt{}", url_id))
         .await;
 
     tokio::time::sleep(Duration::from_millis(200)).await;
@@ -64,7 +65,6 @@ async fn get_listing(
             None
         }
     };
-    // let details_div = web_driver.find(By::ClassName("details")).await?;
     let details_vec = web_driver
         .find_all(By::ClassName("detail-info-features-list"))
         .await?;
@@ -115,36 +115,44 @@ pub async fn supercasas_scrape_mechanism() -> Result<(), WebDriverError> {
                 Ok(Vec::new())
             });
 
-            match url_ids_vec {
-                Ok(url_ids) => {
-                    for url_id in url_ids {
-                        if !supercasas_ids.contains(&url_id) {
-                            println!("Url id: {}", url_id);
-                            let supercasas_listing: SuperCasasListingRaw =
-                                get_listing(&web_driver, url_id).await?;
+            let current_page: String = web_driver.current_url().await?.to_string();
 
-                            write_to_file(
-                                &mut supercasas_write,
-                                format!("{}\n", json!(supercasas_listing)),
-                            )
-                            .await?;
+            if (current_page.contains(district) && current_page.contains(page.to_string().as_str()))
+            {
+                match url_ids_vec {
+                    Ok(url_ids) => {
+                        for url_id in url_ids {
+                            if !supercasas_ids.contains(&url_id) {
+                                println!("Url id: {}", url_id);
+                                let supercasas_listing: SuperCasasListingRaw =
+                                    get_listing(&web_driver, url_id).await?;
 
-                            write_to_file(
-                                &mut supercasas_ids_write,
-                                format!("{}\n", supercasas_listing.url_id),
-                            )
-                            .await?;
+                                write_to_file(
+                                    &mut supercasas_write,
+                                    format!("{}\n", json!(supercasas_listing)),
+                                )
+                                .await?;
 
-                            tokio::time::sleep(Duration::from_millis(500)).await;
-                        } else {
-                            println!("Url id: {} is already scrapped", url_id);
+                                write_to_file(
+                                    &mut supercasas_ids_write,
+                                    format!("{}\n", supercasas_listing.url_id),
+                                )
+                                .await?;
+
+                                tokio::time::sleep(Duration::from_millis(500)).await;
+                            } else {
+                                println!("Url id: {} is already scrapped", url_id);
+                            }
                         }
                     }
+                    Err(e) => {
+                        println!("Error getting url_ids: {}", e);
+                        break;
+                    }
                 }
-                Err(e) => {
-                    println!("Error getting url_ids: {}", e);
-                    break;
-                }
+            } else {
+                println!("No more pages after {} for district {}", page, district);
+                break;
             }
         }
     }
