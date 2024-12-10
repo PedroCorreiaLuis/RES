@@ -1,5 +1,5 @@
 use crate::scrappers::{era_scrapper, remax_scrapper, supercasas_scrapper};
-use dotenv::dotenv;
+use dotenv::from_filename;
 use std::env;
 
 mod llms {
@@ -22,8 +22,9 @@ mod scrappers {
 
 #[tokio::main]
 async fn main() {
+    let env_file: String = env::var("ENV_FILE").unwrap_or(".env".to_string());
     // Securely import sensitive credentials and values from your .env file
-    dotenv().ok();
+    from_filename(&env_file).ok();
 
     let mode: &str = &*env::var("MODE").expect("env variable `MODE` should be set");
 

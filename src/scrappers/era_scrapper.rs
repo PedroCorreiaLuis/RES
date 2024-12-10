@@ -78,10 +78,12 @@ async fn get_listing(
 
 pub async fn era_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
-    let remax_ids_read: File = get_file_read("era_ids.txt").await?;
-    let mut remax_ids_write: File = get_file_write("era_ids.txt").await?;
-    let mut remax_write: File = get_file_write("era.json").await?;
-    let remax_ids: String = get_content_as_string(remax_ids_read).await?;
+    let era_ids_read: File = get_file_read("era_ids.txt").await?;
+    let mut era_ids_write: File = get_file_write("era_ids.txt").await?;
+    let mut era_write: File = get_file_write("era.json").await?;
+    let era_ids: String = get_content_as_string(era_ids_read).await?;
+
+    let mut latest_url_ids: Vec<String> = Vec::new();
 
     for page in 1.. {
         println!("\nScrapper mechanism page {}", page);
@@ -97,29 +99,38 @@ pub async fn era_scrape_mechanism() -> Result<(), WebDriverError> {
 
         match url_ids_vec {
             Ok(url_ids) => {
-                for url_id in url_ids {
-                    if !remax_ids.contains(&url_id) {
-                        println!("Url id: {}", &url_id);
-                        match get_listing(&web_driver, url_id).await {
-                            Ok(era_listing) => {
-                                write_to_file(
-                                    &mut remax_write,
-                                    format!("{}\n", json!(era_listing)),
-                                )
-                                .await?;
+                if latest_url_ids == url_ids {
+                    println!(
+                        "url_ids from page {} are equal to url_ids from previous page",
+                        page
+                    );
+                    break;
+                } else {
+                    latest_url_ids = url_ids.clone();
+                    for url_id in url_ids {
+                        if !era_ids.contains(&url_id) {
+                            println!("Url id: {}", &url_id);
+                            match get_listing(&web_driver, url_id).await {
+                                Ok(era_listing) => {
+                                    write_to_file(
+                                        &mut era_write,
+                                        format!("{}\n", json!(era_listing)),
+                                    )
+                                    .await?;
 
-                                write_to_file(
-                                    &mut remax_ids_write,
-                                    format!("{}\n", era_listing.url_id),
-                                )
-                                .await?;
-                            }
-                            Err(_) => println!("Failed to grab listing"),
-                        };
+                                    write_to_file(
+                                        &mut era_ids_write,
+                                        format!("{}\n", era_listing.url_id),
+                                    )
+                                    .await?;
+                                }
+                                Err(_) => println!("Failed to grab listing"),
+                            };
 
-                        tokio::time::sleep(Duration::from_millis(500)).await;
-                    } else {
-                        println!("Url id: {} is already scrapped", url_id);
+                            tokio::time::sleep(Duration::from_millis(500)).await;
+                        } else {
+                            println!("Url id: {} is already scrapped", url_id);
+                        }
                     }
                 }
             }
