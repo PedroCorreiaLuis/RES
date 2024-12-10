@@ -5,10 +5,32 @@ use thirtyfour::{By, WebDriver, WebElement};
 use crate::schemas::supercasas_listing_raw::SuperCasasListingRaw;
 use crate::scrappers::driver::initialize_driver;
 use crate::scrappers::file_utils::*;
-use crate::scrappers::scrapper_utils::PORTUGUESE_DISTRICTS;
 use thirtyfour::error::WebDriverError;
 use tokio::fs::File;
 use tokio::time::timeout;
+use tokio_retry::strategy::FixedInterval;
+use tokio_retry::Retry;
+
+pub const PORTUGUESE_DISTRICTS: [&str; 18] = [
+    "aveiro",
+    "beja",
+    "braga",
+    "braganca",
+    "castelo-branco",
+    "coimbra",
+    "evora",
+    "faro",
+    "guarda",
+    "leiria",
+    "lisboa",
+    "portalegre",
+    "porto",
+    "santarem",
+    "setubal",
+    "viana-do-castelo",
+    "vila-real",
+    "viseu",
+];
 
 async fn get_url_ids(
     web_driver: &WebDriver,
@@ -136,8 +158,12 @@ pub async fn supercasas_scrape_mechanism() -> Result<(), WebDriverError> {
                         for url_id in url_ids {
                             if !supercasas_ids.contains(&url_id) {
                                 println!("Url id: {}", url_id);
-                                let supercasas_listing: SuperCasasListingRaw =
-                                    get_listing(&web_driver, url_id).await?;
+
+                                let supercasas_listing = Retry::spawn(
+                                    FixedInterval::from_millis(500).take(6),
+                                    || async { get_listing(&web_driver, url_id.clone()).await },
+                                )
+                                .await?;
 
                                 write_to_file(
                                     &mut supercasas_write,
