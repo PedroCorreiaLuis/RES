@@ -17,7 +17,6 @@ mod scrappers {
     pub mod era_scrapper;
     pub mod file_utils;
     pub mod remax_scrapper;
-    pub mod scrapper_utils;
     pub mod supercasas_scrapper;
 }
 
