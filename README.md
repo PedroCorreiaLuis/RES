@@ -27,6 +27,7 @@ The following scrappers are implemented:
 - remax
 - era
 - supercasas
+- imovirtual
 
 These strings correspond to the possible modes to run the program
 

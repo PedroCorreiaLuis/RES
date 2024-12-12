@@ -1,4 +1,4 @@
-use crate::scrappers::{era_scrapper, remax_scrapper, supercasas_scrapper};
+use crate::scrappers::{era_scrapper, imovirtual_scrapper, remax_scrapper, supercasas_scrapper};
 use dotenv::from_filename;
 use std::env;
 
@@ -8,6 +8,7 @@ mod llms {
 
 mod schemas {
     pub mod era_listing_raw;
+    pub mod imovirtual_listing_raw;
     pub mod llm;
     pub mod remax_listing_raw;
     pub mod supercasas_listing_raw;
@@ -16,6 +17,7 @@ mod scrappers {
     pub mod driver;
     pub mod era_scrapper;
     pub mod file_utils;
+    pub mod imovirtual_scrapper;
     pub mod remax_scrapper;
     pub mod supercasas_scrapper;
 }
@@ -38,8 +40,11 @@ async fn main() {
         "supercasas" => {
             supercasas_scrapper::run().await;
         }
+        "imovirtual" => {
+            imovirtual_scrapper::run().await;
+        }
         _ => {
-            println!("Invalid mode provided. Use `remax`, `era` or `supercasas`");
+            println!("Invalid mode provided. Use `remax`, `era`, `supercasas` or `imovirtual`.");
         }
     }
 }
