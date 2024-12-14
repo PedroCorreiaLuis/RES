@@ -28,6 +28,7 @@ The following scrappers are implemented:
 - era
 - supercasas
 - imovirtual
+- idealista
 
 These strings correspond to the possible modes to run the program
 
