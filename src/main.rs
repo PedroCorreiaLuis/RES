@@ -1,3 +1,4 @@
+use crate::llms::llm_runner;
 use crate::scrappers::{
     era_scrapper, idealista_scrapper, imovirtual_scrapper, remax_scrapper, supercasas_scrapper,
 };
@@ -6,6 +7,7 @@ use std::env;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 
 mod llms {
+    pub mod llm_runner;
     pub mod llm_utils;
 }
 
@@ -20,12 +22,15 @@ mod schemas {
 mod scrappers {
     pub mod driver;
     pub mod era_scrapper;
-    pub mod file_utils;
     pub mod idealista_scrapper;
     pub mod imovirtual_scrapper;
     pub mod remax_scrapper;
     pub mod scrapper_utils;
     pub mod supercasas_scrapper;
+}
+
+mod utils {
+    pub mod file_utils;
 }
 
 #[tokio::main]
@@ -52,8 +57,18 @@ async fn main() {
         "idealista" => {
             idealista_scrapper::run().await;
         }
+        "llm" => {
+            let llm_key: &str = &*env::var("OPEN_ROUTER_API_KEY")
+                .expect("env variable `OPEN_ROUTER_API_KEY` should be set");
+            let input: &str =
+                &*env::var("INPUT_PATH").expect("env variable `INPUT_PATH` should be set");
+            let output: &str =
+                &*env::var("OUTPUT_PATH").expect("env variable `OUTPUT_PATH` should be set");
+
+            llm_runner::run(llm_key, input, output).await;
+        }
         _ => {
-            println!("Invalid mode provided. Use `remax`, `era`, `supercasas`, idealista or `imovirtual`.");
+            println!("Invalid mode provided. Use `remax`, `era`, `supercasas`, idealista, `imovirtual` or llm.");
         }
     }
 }

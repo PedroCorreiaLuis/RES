@@ -1,6 +1,6 @@
 # RES
 
-**RES** stands for **RealEstateScrapper** it is a project that scrappes real estate information from the Portuguese
+**RES** stands for **RealEstateScrapper** it is a project that scrapes real estate information from the Portuguese
 market.
 It also allows for an LLM assistant to better analyse if a particular house/apartment is a good deal.
 
@@ -34,9 +34,13 @@ These strings correspond to the possible modes to run the program
 
 ### LLM
 
-For now there is yet no MODE that allows you to run the LLM at ease but it will be implemented in the future. For now
-you can call the `call_real_estate_llm` in any schema that implements `ToLLMRequestBody` and it will generate the
-following response
+To run the LLM you need to specify in your `.env` file a `MODE` that should have the value of llm, a
+`OPEN_ROUTER_API_KEY`,
+a `INPUT_PATH` and a `OUTPUT_PATH`.
+It will output a Json with the response of the model to the target `OUTPUT_PATH`, it will use each JSON inside
+`INPUT_PATH`
+as the body.
+See below the Json schema.
 
 ```
 pub struct LLMRealStateResponse {
@@ -47,13 +51,17 @@ pub struct LLMRealStateResponse {
     has_pool: bool,
     has_good_location: bool,
     location: String,
-    average_price: u32,
-    average_sqr_meters: u32,
-    average_price_per_sqr_meters: u32,
-    sqr_meters: u32,
-    price: u32,
-    summary: String,
-    score: u32,
+    average_price: f32,
+    average_sqr_meters: f32,
+    average_price_per_sqr_meters: f32,
+    sqr_meters: f32,
+    price: Option<f32>,
+    summary: Option<String>,
+    score: f32,
 }
 ```
 
+#### Known limitations
+
+Open router has a limit on the free models, it is limited to 20 requests per minute and 200 per day. For more
+information see [limits](https://openrouter.ai/docs/limits) 

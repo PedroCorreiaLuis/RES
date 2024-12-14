@@ -1,8 +1,6 @@
 use crate::schemas::era_listing_raw::EraListingRaw;
 use crate::scrappers::driver::initialize_driver;
-use crate::scrappers::file_utils::{
-    get_content_as_string, get_file_read, get_file_write, write_to_file,
-};
+use crate::utils::file_utils::*;
 use serde_json::json;
 use std::time::Duration;
 use thirtyfour::error::WebDriverError;

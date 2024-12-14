@@ -4,8 +4,8 @@ use thirtyfour::{By, WebDriver, WebElement};
 
 use crate::schemas::supercasas_listing_raw::SuperCasasListingRaw;
 use crate::scrappers::driver::initialize_driver;
-use crate::scrappers::file_utils::*;
 use crate::scrappers::scrapper_utils::PORTUGUESE_DISTRICTS;
+use crate::utils::file_utils::*;
 use thirtyfour::error::WebDriverError;
 use tokio::fs::File;
 use tokio::time::timeout;

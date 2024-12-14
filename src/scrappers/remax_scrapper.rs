@@ -4,7 +4,7 @@ use thirtyfour::{By, WebDriver, WebElement};
 
 use crate::schemas::remax_listing_raw::RemaxListingRaw;
 use crate::scrappers::driver::initialize_driver;
-use crate::scrappers::file_utils::*;
+use crate::utils::file_utils::*;
 use thirtyfour::error::WebDriverError;
 use tokio::fs::File;
 use tokio::time::timeout;
