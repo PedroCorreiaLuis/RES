@@ -77,8 +77,8 @@ async fn get_listing(
 pub async fn era_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
     let era_ids_read: File = get_file_read("era_ids.txt").await?;
-    let mut era_ids_write: File = get_file_write("era_ids.txt").await?;
-    let mut era_write: File = get_file_write("era.json").await?;
+    let mut era_ids_write: File = get_file_write_append("era_ids.txt").await?;
+    let mut era_write: File = get_file_write_append("era.json").await?;
     let era_ids: String = get_content_as_string(era_ids_read).await?;
 
     let mut latest_url_ids: Vec<String> = Vec::new();

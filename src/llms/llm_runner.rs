@@ -1,6 +1,8 @@
 use crate::llms::llm_utils::call_real_estate_llm_json;
 use crate::schemas::llm::LLMResponse;
-use crate::utils::file_utils::{get_content_lines, get_file_read, get_file_write, write_to_file};
+use crate::utils::file_utils::{
+    get_content_lines, get_file_read, get_file_write_append, write_to_file,
+};
 use std::error::Error;
 use std::time::Duration;
 use tokio::fs::File;
@@ -11,7 +13,7 @@ async fn llm_mechanism(
     output_path: &str,
 ) -> Result<(), Box<dyn Error>> {
     let read_input: File = get_file_read(input_path).await?;
-    let mut write_output: File = get_file_write(output_path).await?;
+    let mut write_output: File = get_file_write_append(output_path).await?;
 
     let content_lines: Vec<String> = get_content_lines(read_input).await?;
 

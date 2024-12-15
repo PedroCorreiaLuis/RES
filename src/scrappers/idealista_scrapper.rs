@@ -92,13 +92,36 @@ async fn get_listing(
 pub async fn idealista_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
     let idealista_ids_read: File = get_file_read("idealista_ids.txt").await?;
-    let mut idealista_ids_write: File = get_file_write("idealista_ids.txt").await?;
-    let mut idealista_write: File = get_file_write("idealista.json").await?;
+    let mut idealista_ids_write: File = get_file_write_append("idealista_ids.txt").await?;
+    let mut idealista_write: File = get_file_write_append("idealista.json").await?;
+    let idealista_cache_read: File = get_file_read("idealista_cache.txt").await?;
+    let idealista_cache: Vec<String> = get_content_lines(idealista_cache_read).await?;
     let idealista_ids: String = get_content_as_string(idealista_ids_read).await?;
 
-    for district in PORTUGUESE_DISTRICTS {
-        for page in 1.. {
+    let cached_district: &str = match idealista_cache.first() {
+        None => PORTUGUESE_DISTRICTS[0],
+        Some(value) => value,
+    };
+
+    let cached_page: u32 = match idealista_cache.last() {
+        None => 1,
+        Some(value) => value.parse::<u32>().unwrap(),
+    };
+
+    for district in PORTUGUESE_DISTRICTS
+        .iter()
+        .skip_while(|&item| *item != cached_district)
+    {
+        for page in cached_page.. {
             println!("\nScrapper mechanism page {}", page);
+            let mut idealista_cache_write_truncate: File =
+                get_file_write_truncate("idealista_cache.txt").await?;
+
+            write_to_file(
+                &mut idealista_cache_write_truncate,
+                format!("{}\n{}", district, page),
+            )
+            .await?;
 
             // If we cannot get the page loaded in 30 seconds we ignore it and move on
             let url_ids_vec: Result<Vec<String>, WebDriverError> = timeout(
@@ -106,7 +129,7 @@ pub async fn idealista_scrape_mechanism() -> Result<(), WebDriverError> {
                 Retry::spawn(
                     ExponentialBackoff::from_millis(500)
                         .max_delay(Duration::from_secs(30))
-                        .take(10),
+                        .take(2),
                     || async { get_url_ids(&web_driver, page, district).await },
                 ),
             )
@@ -133,7 +156,7 @@ pub async fn idealista_scrape_mechanism() -> Result<(), WebDriverError> {
                                 let idealista_listing: IdealistaListingRaw = Retry::spawn(
                                     ExponentialBackoff::from_millis(500)
                                         .max_delay(Duration::from_secs(30))
-                                        .take(10),
+                                        .take(3),
                                     || async { get_listing(&web_driver, url_id.clone()).await },
                                 )
                                 .await?;
@@ -175,13 +198,17 @@ pub async fn run() {
     match Retry::spawn(
         ExponentialBackoff::from_millis(500)
             .max_delay(Duration::from_secs(30))
-            .take(10),
+            .take(20),
         || async { idealista_scrape_mechanism().await },
     )
     .await
     {
         Ok(_) => {
-            println!("idealista scrapper mechanism finished")
+            println!("Idealista scrapper mechanism finished");
+            println!("Clearing cache");
+            get_file_write_truncate("idealista_cache.txt")
+                .await
+                .unwrap();
         }
         Err(e) => {
             eprintln!("Error: {:?}", e);

@@ -76,8 +76,8 @@ async fn get_listing(
 pub async fn imovirtual_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
     let imovirtual_ids_read: File = get_file_read("imovirtual_ids.txt").await?;
-    let mut imovirtual_ids_write: File = get_file_write("imovirtual_ids.txt").await?;
-    let mut imovirtual_write: File = get_file_write("imovirtual.json").await?;
+    let mut imovirtual_ids_write: File = get_file_write_append("imovirtual_ids.txt").await?;
+    let mut imovirtual_write: File = get_file_write_append("imovirtual.json").await?;
     let imovirtual_ids: String = get_content_as_string(imovirtual_ids_read).await?;
 
     for page in 1.. {

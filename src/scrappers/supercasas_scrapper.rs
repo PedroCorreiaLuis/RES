@@ -98,8 +98,8 @@ async fn get_listing(
 pub async fn supercasas_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
     let supercasas_ids_read: File = get_file_read("supercasas_ids.txt").await?;
-    let mut supercasas_ids_write: File = get_file_write("supercasas_ids.txt").await?;
-    let mut supercasas_write: File = get_file_write("supercasas.json").await?;
+    let mut supercasas_ids_write: File = get_file_write_append("supercasas_ids.txt").await?;
+    let mut supercasas_write: File = get_file_write_append("supercasas.json").await?;
     let supercasas_ids: String = get_content_as_string(supercasas_ids_read).await?;
 
     for district in PORTUGUESE_DISTRICTS {

@@ -75,8 +75,8 @@ async fn get_listing(
 pub async fn remax_scrape_mechanism() -> Result<(), WebDriverError> {
     let web_driver: WebDriver = initialize_driver().await?;
     let remax_ids_read: File = get_file_read("remax_ids.txt").await?;
-    let mut remax_ids_write: File = get_file_write("remax_ids.txt").await?;
-    let mut remax_write: File = get_file_write("remax.json").await?;
+    let mut remax_ids_write: File = get_file_write_append("remax_ids.txt").await?;
+    let mut remax_write: File = get_file_write_append("remax.json").await?;
     let remax_ids: String = get_content_as_string(remax_ids_read).await?;
 
     for page in 1.. {

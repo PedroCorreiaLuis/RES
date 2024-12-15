@@ -6,11 +6,22 @@ pub async fn get_file_read(path: &str) -> Result<File, std::io::Error> {
     Ok(file_read)
 }
 
-pub async fn get_file_write(path: &str) -> Result<File, std::io::Error> {
+pub async fn get_file_write_append(path: &str) -> Result<File, std::io::Error> {
     let file_write: File = OpenOptions::new()
         .create(true)
         .write(true)
         .append(true)
+        .open(path)
+        .await?;
+
+    Ok(file_write)
+}
+
+pub async fn get_file_write_truncate(path: &str) -> Result<File, std::io::Error> {
+    let file_write: File = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
         .open(path)
         .await?;
 
