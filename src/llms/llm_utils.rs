@@ -6,6 +6,7 @@ use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use reqwest::{Client, Response};
 use serde::Serialize;
 use serde_json::json;
+use std::error::Error;
 use std::string::ToString;
 
 pub async fn call_real_estate_llm<T: ToLLMRequestBody + Serialize>(
@@ -63,7 +64,10 @@ pub async fn call_real_estate_llm<T: ToLLMRequestBody + Serialize>(
     })
 }
 
-pub async fn call_real_estate_llm_json(request: String, key: &str) -> reqwest::Result<LLMResponse> {
+pub async fn call_real_estate_llm_json(
+    request: String,
+    key: &str,
+) -> Result<LLMResponse, Box<dyn Error>> {
     let client: Client = Client::new();
     let mut headers_map: HeaderMap = HeaderMap::new();
 
@@ -86,14 +90,7 @@ pub async fn call_real_estate_llm_json(request: String, key: &str) -> reqwest::R
     let llm_response_raw_text: String = response.text().await?;
 
     let llm_response_raw: LLMResponseRaw =
-        match serde_json::from_str::<LLMResponseRaw>(&llm_response_raw_text) {
-            Ok(raw_response) => raw_response,
-            Err(e) => {
-                println!("Failed to parse JSON: {}", e);
-                println!("Response text: {}", llm_response_raw_text);
-                panic!()
-            }
-        };
+        serde_json::from_str::<LLMResponseRaw>(&llm_response_raw_text)?;
 
     let mut llm_response_choices: Vec<LLMResponseChoice> = Vec::new();
 
@@ -104,12 +101,7 @@ pub async fn call_real_estate_llm_json(request: String, key: &str) -> reqwest::R
         } else {
             format!("{}{}", &*llm_message_response_raw.content, "}")
         };
-        let llm_message_response: LLMRealStateResponse = serde_json::from_str(&*fixed_raw_content)
-            .unwrap_or_else(|e| {
-                println!("Failed to parse content: {:?}", e);
-                println!("Failed to parse from raw content: {:?}", fixed_raw_content);
-                panic!()
-            });
+        let llm_message_response: LLMRealStateResponse = serde_json::from_str(&*fixed_raw_content)?;
 
         let message_response: LLMMessageResponse = LLMMessageResponse {
             role: llm_message_response_raw.role,
@@ -158,8 +150,8 @@ pub const USER_CONTENT: &str = "Based on the following JSON that I will give you
 
           The properties should be calculated following these instructions:
           - url_id is extracted from the provided JSON
-          - no_bedrooms is extracted from the provided JSON, if its not a number cast it to a number, not a String
-          - no_bathrooms is extracted from the provided JSON, if its not a number cast it to a number, not a String
+          - no_bedrooms is extracted from the provided JSON, if its not a number cast it to an integer, not a String
+          - no_bathrooms is extracted from the provided JSON, if its not a number cast it to an integer, not a String
           - has_garage is inferred from the provided JSON, if its not a bool cast it to a bool, not a String
           - has_pool is inferred from the provided JSON, if its not a bool cast it to a bool, not a String
           - has_good_location is inferred from the provided JSON, if its not a bool cast it to a bool, not a String

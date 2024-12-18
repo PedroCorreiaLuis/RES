@@ -103,16 +103,24 @@ pub async fn idealista_scrape_mechanism() -> Result<(), WebDriverError> {
         Some(value) => value,
     };
 
-    let cached_page: u32 = match idealista_cache.last() {
-        None => 1,
-        Some(value) => value.parse::<u32>().unwrap(),
-    };
+    async fn cached_page() -> u32 {
+        let idealista_cache_read: File = get_file_read("idealista_cache.txt").await.unwrap();
+
+        match get_content_lines(idealista_cache_read)
+            .await
+            .unwrap()
+            .last()
+        {
+            None => 1,
+            Some(value) => value.parse::<u32>().unwrap(),
+        }
+    }
 
     for district in PORTUGUESE_DISTRICTS
         .iter()
         .skip_while(|&item| *item != cached_district)
     {
-        for page in cached_page.. {
+        for page in cached_page().await.. {
             println!("\nScrapper mechanism page {}", page);
             let mut idealista_cache_write_truncate: File =
                 get_file_write_truncate("idealista_cache.txt").await?;
@@ -186,6 +194,14 @@ pub async fn idealista_scrape_mechanism() -> Result<(), WebDriverError> {
                 }
             } else {
                 println!("No more pages after {} for district {}", page, district);
+                let mut idealista_cache_write_truncate: File =
+                    get_file_write_truncate("idealista_cache.txt").await?;
+
+                write_to_file(
+                    &mut idealista_cache_write_truncate,
+                    format!("{}\n{}", district, 1),
+                )
+                .await?;
                 break;
             }
         }
@@ -199,7 +215,10 @@ pub async fn run() {
         ExponentialBackoff::from_millis(500)
             .max_delay(Duration::from_secs(30))
             .take(20),
-        || async { idealista_scrape_mechanism().await },
+        || async {
+            println!("Retrying scrapper mechanism");
+            idealista_scrape_mechanism().await
+        },
     )
     .await
     {

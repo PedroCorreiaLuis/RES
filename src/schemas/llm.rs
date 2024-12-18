@@ -68,7 +68,7 @@ pub struct LLMMessageResponse {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct LLMRealStateResponse {
-    url_id: String,
+    pub url_id: String,
     no_bedrooms: u32,
     no_bathrooms: u32,
     has_garage: bool,

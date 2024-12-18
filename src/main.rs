@@ -30,6 +30,7 @@ mod scrappers {
 }
 
 mod utils {
+    pub mod cache_utils;
     pub mod file_utils;
 }
 
@@ -65,7 +66,7 @@ async fn main() {
             let output: &str =
                 &*env::var("OUTPUT_PATH").expect("env variable `OUTPUT_PATH` should be set");
 
-            llm_runner::run(llm_key, input, output).await;
+            let _ = llm_runner::run(llm_key, input, output).await;
         }
         _ => {
             println!("Invalid mode provided. Use `remax`, `era`, `supercasas`, idealista, `imovirtual` or llm.");
